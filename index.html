@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jeopardy</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    
+    :root {
+      --silver: #C0C0C0;
+      --silver-dark: #808080;
+      --silver-light: #E0E0E0;
+      --bg: #0A0A0A;
+      --surface: #121212;
+      --surface-bright: #1A1A1A;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: #FFFFFF;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: radial-gradient(circle at 50% -20%, #2a2a2a 0%, #0a0a0a 100%);
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(192, 192, 192, 0.2);
+    }
+
+    .silver-text {
+      color: var(--silver);
+      text-shadow: 0 0 20px rgba(192, 192, 192, 0.2);
+    }
+
+    .silver-border {
+      border-color: var(--silver);
+    }
+
+    .silver-bg {
+      background-color: var(--silver);
+    }
+
+    .jeopardy-tile {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .jeopardy-tile:not(:disabled):hover {
+      transform: translateY(-4px);
+      border-color: var(--silver);
+      box-shadow: 0 10px 30px -10px rgba(192, 192, 192, 0.3);
+      background-color: var(--surface-bright);
+    }
+
+    .jeopardy-tile:disabled {
+      opacity: 0.2;
+      filter: grayscale(1);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: var(--surface-bright);
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: var(--silver);
+    }
+
+    button {
+      transition: all 0.2s ease;
+    }
+
+    input:focus {
+      box-shadow: 0 0 0 2px rgba(192, 192, 192, 0.3);
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "@google/genai": "https://esm.sh/@google/genai@^1.41.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+  <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

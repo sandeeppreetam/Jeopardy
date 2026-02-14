@@ -1,0 +1,5 @@
+{
+  "name": "Jeopardy",
+  "description": "A local multiplayer Jeopardy-style trivia game where you define the topics and Gemini generates the questions.",
+  "requestFramePermissions": []
+}
