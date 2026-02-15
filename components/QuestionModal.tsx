@@ -23,14 +23,17 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
   onPass,
   onLifelineUsed
 }) => {
-  const [phase, setPhase] = useState<'prepare' | 'question' | 'solution'>('prepare');
+  const isAdvancedMode = gameMode === 'advanced';
+  
+  // In basic mode, skip prepare phase and go straight to question
+  const [phase, setPhase] = useState<'prepare' | 'question' | 'solution'>(
+    isAdvancedMode ? 'prepare' : 'question'
+  );
   const [timeLeft, setTimeLeft] = useState(timerSeconds);
   const [isFrozen, setIsFrozen] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
   const [isLoadingHint, setIsLoadingHint] = useState(false);
   const [isDoubleUsed, setIsDoubleUsed] = useState(false);
-
-  const isAdvancedMode = gameMode === 'advanced';
 
   useEffect(() => {
     if (phase !== 'question' || isFrozen) return;
@@ -113,12 +116,10 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
           )}
         </div>
 
-        {/* Phase: Preparation */}
-        {phase === 'prepare' && (
+        {/* Phase: Preparation (Advanced Mode Only) */}
+        {phase === 'prepare' && isAdvancedMode && (
           <div className="py-12 animate-in zoom-in duration-300">
-            {isAdvancedMode && (
-              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.5em] mb-8">Do you want to double the stakes?</h4>
-            )}
+            <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.5em] mb-8">Do you want to double the stakes?</h4>
             <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
               <button
                 onClick={handleEngage}
@@ -126,7 +127,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
               >
                 Reveal Question
               </button>
-              {isAdvancedMode && !currentPlayer.lifelines.doubleUsed && (
+              {!currentPlayer.lifelines.doubleUsed && (
                 <button
                   onClick={handleDouble}
                   className="px-8 py-5 border border-yellow-500/30 text-yellow-500 rounded-2xl font-black text-xs uppercase tracking-[0.3em] hover:bg-yellow-500 hover:text-black transition-all"
