@@ -208,19 +208,19 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-xl mx-auto">
                 <button
                   onClick={() => onWrong(-(currentPoints / 2))}
-                  className="py-5 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-all"
+                  className="py-5 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 hover:border-red-600 transition-all"
                 >
                   Incorrect
                 </button>
                 <button
                   onClick={() => onPass(-(currentPoints / 4))}
-                  className="py-5 bg-white/5 border border-white/10 text-gray-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-gray-500 transition-all flex items-center justify-center gap-2"
+                  className="py-5 bg-white/5 border border-white/10 text-gray-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-700 hover:border-gray-700 hover:text-white transition-all flex items-center justify-center gap-2"
                 >
                   <span>Pass</span>
                 </button>
                 <button
                   onClick={confirmCorrect}
-                  className="py-5 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
+                  className="py-5 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 hover:border-emerald-600 transition-all flex items-center justify-center gap-2"
                 >
                   <span>Correct</span>
                 </button>
