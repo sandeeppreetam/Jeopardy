@@ -154,7 +154,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 
             <div className="mb-12">
               <h3 className="text-3xl md:text-5xl font-black text-white leading-tight tracking-tight mb-8">
-                "{question.question}"
+                {question.question}
               </h3>
               
               {hint && (
