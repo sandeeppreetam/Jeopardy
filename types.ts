@@ -1,4 +1,3 @@
-
 export enum GameState {
   SETUP = 'SETUP',
   TOPICS = 'TOPICS',
@@ -6,6 +5,8 @@ export enum GameState {
   PLAYING = 'PLAYING',
   FINISHED = 'FINISHED'
 }
+
+export type GameMode = 'basic' | 'advanced';
 
 export interface Lifelines {
   freezeUsed: boolean;
@@ -42,6 +43,7 @@ export interface GameSettings {
   numTopics: number;
   numQuestionsPerTopic: number;
   timerSeconds: number;
+  gameMode: GameMode;
 }
 
 export interface HistoryItem {

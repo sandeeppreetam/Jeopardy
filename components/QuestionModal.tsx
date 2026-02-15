@@ -1,12 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
-import { Question, Player } from '../types';
+import { Question, Player, GameMode } from '../types';
 import { getQuestionHint } from '../services/geminiService';
 
 interface QuestionModalProps {
   question: Question;
   currentPlayer: Player;
   timerSeconds: number;
+  gameMode: GameMode;
   onCorrect: (points: number, isSpeedBonus: boolean) => void;
   onWrong: (points: number) => void;
   onPass: (points: number) => void;
@@ -17,6 +17,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
   question, 
   currentPlayer, 
   timerSeconds,
+  gameMode,
   onCorrect, 
   onWrong, 
   onPass,
@@ -28,6 +29,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
   const [hint, setHint] = useState<string | null>(null);
   const [isLoadingHint, setIsLoadingHint] = useState(false);
   const [isDoubleUsed, setIsDoubleUsed] = useState(false);
+
+  const isAdvancedMode = gameMode === 'advanced';
 
   useEffect(() => {
     if (phase !== 'question' || isFrozen) return;
@@ -72,7 +75,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
   };
 
   const currentPoints = isDoubleUsed ? question.points * 2 : question.points;
-  const isSpeedBonusActive = (timerSeconds - timeLeft) <= 5;
+  const isSpeedBonusActive = isAdvancedMode && (timerSeconds - timeLeft) <= 5;
 
   const confirmCorrect = () => {
     const finalPoints = isSpeedBonusActive ? currentPoints + 15 : currentPoints;
@@ -113,7 +116,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         {/* Phase: Preparation */}
         {phase === 'prepare' && (
           <div className="py-12 animate-in zoom-in duration-300">
-            <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.5em] mb-8">Do you want to double the stakes?</h4>
+            {isAdvancedMode && (
+              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.5em] mb-8">Do you want to double the stakes?</h4>
+            )}
             <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
               <button
                 onClick={handleEngage}
@@ -121,7 +126,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
               >
                 Reveal Question
               </button>
-              {!currentPlayer.lifelines.doubleUsed && (
+              {isAdvancedMode && !currentPlayer.lifelines.doubleUsed && (
                 <button
                   onClick={handleDouble}
                   className="px-8 py-5 border border-yellow-500/30 text-yellow-500 rounded-2xl font-black text-xs uppercase tracking-[0.3em] hover:bg-yellow-500 hover:text-black transition-all"
@@ -172,18 +177,20 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
               >
                 Reveal Solution
               </button>
-              <div className="flex gap-2">
-                {!currentPlayer.lifelines.freezeUsed && !isFrozen && (
-                  <button onClick={handleFreeze} className="w-12 h-12 rounded-xl border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 transition-all flex items-center justify-center">
-                    <i className="fas fa-snowflake"></i>
-                  </button>
-                )}
-                {!currentPlayer.lifelines.hintUsed && !hint && (
-                  <button onClick={handleHint} disabled={isLoadingHint} className="w-12 h-12 rounded-xl border border-purple-500/30 text-purple-400 hover:bg-purple-500/10 transition-all flex items-center justify-center">
-                    {isLoadingHint ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-lightbulb"></i>}
-                  </button>
-                )}
-              </div>
+              {isAdvancedMode && (
+                <div className="flex gap-2">
+                  {!currentPlayer.lifelines.freezeUsed && !isFrozen && (
+                    <button onClick={handleFreeze} className="w-12 h-12 rounded-xl border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 transition-all flex items-center justify-center">
+                      <i className="fas fa-snowflake"></i>
+                    </button>
+                  )}
+                  {!currentPlayer.lifelines.hintUsed && !hint && (
+                    <button onClick={handleHint} disabled={isLoadingHint} className="w-12 h-12 rounded-xl border border-purple-500/30 text-purple-400 hover:bg-purple-500/10 transition-all flex items-center justify-center">
+                      {isLoadingHint ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-lightbulb"></i>}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { GameState, Player, Topic, GameSettings, HistoryItem } from './types';
 import { generateQuestions } from './services/geminiService';
@@ -16,7 +15,8 @@ const App: React.FC = () => {
   const [gameSettings, setGameSettings] = useState<GameSettings>({
     numTopics: 4,
     numQuestionsPerTopic: 4,
-    timerSeconds: 30
+    timerSeconds: 30,
+    gameMode: 'basic'
   });
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
@@ -160,6 +160,7 @@ const App: React.FC = () => {
                 question={topics[selectedQuestion.topicIdx].questions[selectedQuestion.qIdx]}
                 currentPlayer={players[currentPlayerIndex]}
                 timerSeconds={gameSettings.timerSeconds}
+                gameMode={gameSettings.gameMode}
                 onCorrect={(finalPoints, isSpeedBonus) => updateScore(finalPoints, 'correct', isSpeedBonus)}
                 onWrong={(penalty) => updateScore(penalty, 'wrong')}
                 onPass={(penalty) => updateScore(penalty, 'pass')}

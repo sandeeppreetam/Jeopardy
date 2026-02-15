@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Player, GameSettings } from '../types';
+import { Player, GameSettings, GameMode } from '../types';
 import InstructionsModal from './InstructionsModal';
 
 interface SetupScreenProps {
@@ -23,7 +22,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onComplete }) => {
   const [settings, setSettings] = useState<GameSettings>({
     numTopics: 4,
     numQuestionsPerTopic: 4,
-    timerSeconds: 30
+    timerSeconds: 30,
+    gameMode: 'basic'
   });
 
   const handleNameChange = (index: number, value: string) => {
@@ -109,6 +109,57 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onComplete }) => {
         </h2>
 
         <div className="space-y-8">
+          {/* Game Mode Selector */}
+          <div className="space-y-4">
+            <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em]">Game Mode</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setSettings({...settings, gameMode: 'basic'})}
+                className={`py-4 px-4 rounded-xl font-bold transition-all text-xs border ${
+                  settings.gameMode === 'basic'
+                  ? 'bg-[#C0C0C0] border-[#C0C0C0] text-black shadow-[0_0_20px_rgba(192,192,192,0.3)]' 
+                  : 'bg-transparent border-white/10 text-gray-400 hover:border-gray-500'
+                }`}
+              >
+                <div className="mb-1">
+                  <i className="fas fa-play-circle"></i> BASIC
+                </div>
+                <div className="text-[8px] font-normal opacity-70">
+                  Simple gameplay
+                </div>
+              </button>
+              <button
+                onClick={() => setSettings({...settings, gameMode: 'advanced'})}
+                className={`py-4 px-4 rounded-xl font-bold transition-all text-xs border ${
+                  settings.gameMode === 'advanced'
+                  ? 'bg-[#C0C0C0] border-[#C0C0C0] text-black shadow-[0_0_20px_rgba(192,192,192,0.3)]' 
+                  : 'bg-transparent border-white/10 text-gray-400 hover:border-gray-500'
+                }`}
+              >
+                <div className="mb-1">
+                  <i className="fas fa-bolt"></i> ADVANCED
+                </div>
+                <div className="text-[8px] font-normal opacity-70">
+                  Power-ups & bonuses
+                </div>
+              </button>
+            </div>
+            {/* Mode description */}
+            <div className="text-[9px] text-gray-600 leading-relaxed p-3 bg-white/5 rounded-lg border border-white/5">
+              {settings.gameMode === 'basic' ? (
+                <>
+                  <div className="font-bold text-gray-500 mb-1">BASIC MODE:</div>
+                  Standard Jeopardy gameplay without time bonuses or power-ups.
+                </>
+              ) : (
+                <>
+                  <div className="font-bold text-gray-500 mb-1">ADVANCED MODE:</div>
+                  Includes speed bonuses, freeze time, hints, and double stakes power-ups.
+                </>
+              )}
+            </div>
+          </div>
+
           <div className="space-y-4">
             <div className="flex justify-between items-end">
               <label className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em]">Categories</label>
