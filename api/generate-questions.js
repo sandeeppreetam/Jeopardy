@@ -23,20 +23,31 @@ export default async function handler(req, res) {
     
     // --- STEP 1: ADD VARIETY GENERATORS ---
     const personas = [
-      "a witty Oxford professor who loves terrible puns",
       "a high-energy 90s game show host with a flair for the dramatic",
       "a mysterious librarian who knows everyone's secrets",
       "a snarky tech billionaire who thinks they're the smartest in the room",
-      "a time-traveling historian who treats every fact like a personal memory"
+      "a retired cinema villain who roasts wrong answers like a dramatic monologue",
+      "a hyper competitive cricket commentator who treats every question like a World Cup final",
+      "a chill Bengaluru startup bro who rates your answers like pitch decks",
+      "a dramatic mythology narrator who reacts to every answer like it changes destiny",
+      "a sarcastic older sibling who never lets you forget your mistakes",
+      "a devotional temple announcer who treats correct answers like divine blessings",
+      "a chaotic meme page admin who replies only in viral references",
+      "a strict Indian school principal who deducts imaginary marks for confidence",
+      "a late night radio jockey who turns every question into a life lesson",
+      "a friendly chai shop uncle who gives trivia along with unsolicited advice",
+      "a fitness coach who shouts encouragement even when you get it wrong",
+      "a courtroom lawyer who cross examines your logic before accepting an answer",
+      "a sci fi spaceship AI that is slightly disappointed in humanity",
+      "a melodramatic soap opera mom who reacts emotionally to every choice",
+      "a calm monk who treats the quiz like a test of inner balance"
     ];
 
     const wildcards = [
-      "Focus on 'Firsts' and 'Lasts'—the beginnings and ends of eras.",
-      "Incorporate clever wordplay or puns into the clues themselves.",
-      "The 'Six Degrees' rule: Try to connect the facts to a modern pop culture icon.",
+      "Focus on 'Firsts' and 'Lasts'— the beginnings and ends of eras. Don't be over focused on years.",
       "The 'Underdog' Perspective: Highlight figures or events that history books often skip.",
       "Frame clues as 'Who am I?' or 'What am I?' riddles.",
-      "Double-layered clues: Include a helpful hint within the clue's phrasing.",
+      "Double-layered clues: Include a helpful hint within the clue's phrasing. Only do it for 10% of questions.",
       "Focus on 'Mistakes that changed the world'—serendipity and accidents.",
       "Contrast: Frame the question by comparing two things that shouldn't be related."
     ];
