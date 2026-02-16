@@ -26,15 +26,32 @@ export default async function handler(req, res) {
     const pointValues = Array.from({ length: numQuestionsPerTopic }, (_, i) => (i + 1) * 50);
     
     const prompt = `You are a professional trivia host and researcher for a high-stakes game show like Jeopardy.
+
 Generate a set of sophisticated and engaging trivia questions for the following categories: ${topics.join(", ")}.
 
 For EACH topic, provide exactly ${numQuestionsPerTopic} questions with these point values: ${pointValues.join(", ")}.
 
-CRITICAL INSTRUCTIONS FOR QUALITY:
-1. DIFFICULTY SCALING: Low-value (50-100) are accessible, high-value (200+) are for experts.
-2. PHRASING: Write clever clues with wordplay.
-3. ANSWERS: Ensure definitive and unambiguous answers.
-4. FORMAT: Return strictly valid JSON.
+CRITICAL FRESHNESS REQUIREMENTS:
+1. AVOID COMMON QUESTIONS: Never use overused trivia (e.g., "What is the capital of France?", "Who painted the Mona Lisa?")
+2. MAXIMIZE VARIETY: Within each category, explore different:
+   - Time periods (ancient, medieval, modern, contemporary)
+   - Geographical regions (different countries and cultures)
+   - Subtopics and angles (don't just focus on the most famous examples)
+   - Question formats (who/what/when/where/how many/which/why)
+3. MIX FAMOUS AND OBSCURE: Combine well-known facts with lesser-known interesting details
+4. BE CREATIVE: Use unexpected angles, surprising connections, and interesting contexts
+
+DIFFICULTY SCALING:
+- ${pointValues[0]}-${pointValues[1]} points: Accessible but interesting questions
+- ${pointValues[Math.floor(numQuestionsPerTopic/2)]} points: Moderate difficulty, requires specific knowledge
+- ${pointValues[numQuestionsPerTopic-1]} points: Expert-level, challenging and obscure
+
+QUALITY STANDARDS:
+- Write clever Jeopardy-style clues with wordplay when appropriate
+- Answers must be definitive and unambiguous (single correct answer)
+- Questions should be educational and entertaining
+- Ensure factual accuracy
+- Return strictly valid JSON
 
 Category list: ${topics.join(", ")}`;
 
@@ -70,7 +87,11 @@ Category list: ${topics.join(", ")}`;
             }
           },
           required: ["topics"]
-        }
+        },
+        // Higher temperature = more creative/random output
+        temperature: 1.5,
+        // Higher top_p = consider more token options for diversity
+        topP: 0.95
       }
     });
 
