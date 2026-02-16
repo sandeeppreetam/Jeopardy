@@ -13,8 +13,7 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onClose }) => {
         
         <div className="flex justify-between items-center mb-10">
           <div>
-            <h2 className="text-2xl font-black text-white uppercase tracking-[0.2em]">Game Protocol</h2>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Operational Guidelines</p>
+            <h2 className="text-2xl font-black text-white uppercase tracking-[0.2em]">Game Rules</h2>
           </div>
           <button 
             onClick={onClose}
@@ -31,7 +30,7 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onClose }) => {
               <h3 className="text-xs font-black text-white uppercase tracking-widest">Core Objective</h3>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed pl-9">
-              Navigate the data grid to extract maximum intelligence. The player with the highest total yield after all categories are cleared wins the session.
+              Pick questions from the board to win points. The player with the highest total points after all questions are picked wins the game.
             </p>
           </section>
 
@@ -41,27 +40,27 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onClose }) => {
               <h3 className="text-xs font-black text-white uppercase tracking-widest">Turn Dynamics</h3>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed pl-9">
-              Players rotate turns sequentially. On your turn, select any available clue from the grid. Point values indicate the difficulty level of the decryption.
+              Players rotate turns sequentially. On your turn, select any available question from the grid. Point values indicate the difficulty level of the question.
             </p>
           </section>
 
           <section>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-6 h-6 rounded bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-[#C0C0C0]">03</div>
-              <h3 className="text-xs font-black text-white uppercase tracking-widest">Scoring Algorithms</h3>
+              <h3 className="text-xs font-black text-white uppercase tracking-widest">Scoring Rules</h3>
             </div>
             <ul className="space-y-3 pl-9">
               <li className="flex items-center gap-3 text-sm text-emerald-500">
                 <i className="fas fa-check-circle text-[10px]"></i>
-                <span><strong className="text-white">Correct:</strong> Earn full clue points + optional Speed Bonus.</span>
+                <span><strong className="text-white">Correct:</strong> Earn full points + optional Speed Bonus.</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-rose-500">
                 <i className="fas fa-times-circle text-[10px]"></i>
-                <span><strong className="text-white">Incorrect:</strong> Deduction of 50% clue points.</span>
+                <span><strong className="text-white">Incorrect:</strong> Deduction of 50% points.</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-gray-500">
                 <i className="fas fa-minus-circle text-[10px]"></i>
-                <span><strong className="text-white">Pass:</strong> Strategic withdrawal costs 25% clue points.</span>
+                <span><strong className="text-white">Pass:</strong> Strategic withdrawal costs 25% points.</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-yellow-500/80">
                 <i className="fas fa-bolt text-[10px]"></i>
@@ -73,7 +72,7 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onClose }) => {
           <section>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-6 h-6 rounded bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-[#C0C0C0]">04</div>
-              <h3 className="text-xs font-black text-white uppercase tracking-widest">Available Lifelines</h3>
+              <h3 className="text-xs font-black text-white uppercase tracking-widest">Available Lifelines (advanced mode only)</h3>
             </div>
             <p className="text-[10px] text-gray-600 font-bold uppercase mb-4 pl-9">Each player has one-time access to the following:</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pl-9">
@@ -85,7 +84,7 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onClose }) => {
               <div className="p-4 rounded-xl bg-white/5 border border-white/5">
                 <i className="fas fa-lightbulb text-purple-400 mb-2"></i>
                 <h4 className="text-[10px] font-black text-white uppercase mb-1">Hint</h4>
-                <p className="text-[10px] text-gray-500">Generates a cryptic clue via Gemini.</p>
+                <p className="text-[10px] text-gray-500">Generates a clue via AI.</p>
               </div>
               <div className="p-4 rounded-xl bg-white/5 border border-white/5">
                 <i className="fas fa-bolt text-yellow-500 mb-2"></i>
@@ -100,7 +99,7 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onClose }) => {
           onClick={onClose}
           className="w-full mt-10 py-4 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:scale-[1.02] transition-transform"
         >
-          Acknowledge & Close
+          Close
         </button>
       </div>
     </div>
