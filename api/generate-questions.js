@@ -25,11 +25,34 @@ export default async function handler(req, res) {
     const ai = new GoogleGenAI({ apiKey });
     const pointValues = Array.from({ length: numQuestionsPerTopic }, (_, i) => (i + 1) * 50);
     
+    // Random wildcards for variety
+    const wildcards = [
+      "Focus on 'Firsts' and 'Lasts'.",
+      "Include a pun or wordplay in at least 30% of the clues.",
+      "Connect the answers to pop culture wherever possible.",
+      "Focus on 'The Underdogs' or overlooked figures in history.",
+      "Frame clues as 'Who am I?' or 'What am I?' riddles.",
+      "Emphasize surprising connections between different fields.",
+      "Include questions about recent events from the last 5 years.",
+      "Focus on geography and lesser-known locations.",
+      "Highlight women and minorities who made significant contributions.",
+      "Include scientific discoveries and their discoverers.",
+      "Focus on art movements and their key figures.",
+      "Explore food history and culinary innovations.",
+      "Include questions about technology and innovation.",
+      "Focus on literary works and their authors.",
+      "Highlight music history across different genres."
+    ];
+    
+    const selectedWildcard = wildcards[Math.floor(Math.random() * wildcards.length)];
+    
     const prompt = `You are a professional trivia host and researcher for a high-stakes game show like Jeopardy.
 
 Generate a set of sophisticated and engaging trivia questions for the following categories: ${topics.join(", ")}.
 
 For EACH topic, provide exactly ${numQuestionsPerTopic} questions with these point values: ${pointValues.join(", ")}.
+
+SPECIAL THEME FOR THIS GAME: ${selectedWildcard}
 
 CRITICAL FRESHNESS REQUIREMENTS:
 1. AVOID COMMON QUESTIONS: Never use overused trivia (e.g., "What is the capital of France?", "Who painted the Mona Lisa?")
@@ -40,6 +63,7 @@ CRITICAL FRESHNESS REQUIREMENTS:
    - Question formats (who/what/when/where/how many/which/why)
 3. MIX FAMOUS AND OBSCURE: Combine well-known facts with lesser-known interesting details
 4. BE CREATIVE: Use unexpected angles, surprising connections, and interesting contexts
+5. FOLLOW THE THEME: Make sure to incorporate the special theme above throughout the questions
 
 DIFFICULTY SCALING:
 - ${pointValues[0]}-${pointValues[1]} points: Accessible but interesting questions
@@ -113,7 +137,11 @@ Category list: ${topics.join(", ")}`;
       }))
     }));
 
-    return res.status(200).json({ topics: transformedTopics });
+    // Return both topics and the theme
+    return res.status(200).json({ 
+      topics: transformedTopics,
+      theme: selectedWildcard
+    });
   } catch (error) {
     console.error('Gemini API Error:', error);
     return res.status(500).json({ 

@@ -3,7 +3,7 @@ import { Topic } from "../types";
 export const generateQuestions = async (
   topics: string[], 
   numQuestionsPerTopic: number
-): Promise<Topic[]> => {
+): Promise<{ topics: Topic[], theme: string }> => {
   try {
     const response = await fetch('/api/generate-questions', {
       method: 'POST',
@@ -22,7 +22,10 @@ export const generateQuestions = async (
     }
 
     const data = await response.json();
-    return data.topics;
+    return {
+      topics: data.topics,
+      theme: data.theme
+    };
   } catch (error: any) {
     console.error('Failed to generate questions:', error);
     throw error;

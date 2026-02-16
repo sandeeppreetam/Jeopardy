@@ -21,6 +21,7 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [topics, setTopics] = useState<Topic[]>([]);
+  const [gameTheme, setGameTheme] = useState<string>('');
   const [selectedQuestion, setSelectedQuestion] = useState<{ topicIdx: number; qIdx: number } | null>(null);
   const [answeredCount, setAnsweredCount] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState("Preparing Session...");
@@ -35,8 +36,9 @@ const App: React.FC = () => {
     setGameState(GameState.LOADING);
     setLoadingMessage("Synthesizing Categories...");
     try {
-      const generated = await generateQuestions(topicNames, gameSettings.numQuestionsPerTopic);
+      const { topics: generated, theme } = await generateQuestions(topicNames, gameSettings.numQuestionsPerTopic);
       setTopics(generated);
+      setGameTheme(theme);
       setGameState(GameState.PLAYING);
     } catch (error) {
       console.error("Failed to generate questions:", error);
@@ -104,6 +106,7 @@ const App: React.FC = () => {
     setPlayers([]);
     setCurrentPlayerIndex(0);
     setTopics([]);
+    setGameTheme('');
     setAnsweredCount(0);
     setHistory([]);
     setSelectedQuestion(null);
@@ -144,6 +147,19 @@ const App: React.FC = () => {
         {gameState === GameState.PLAYING && (
           <div className="w-full flex flex-col items-center">
             <ScoreBoard players={players} currentPlayerIndex={currentPlayerIndex} />
+            
+            {/* Game Theme Display */}
+            {gameTheme && (
+              <div className="mb-6 px-6 py-3 bg-purple-500/10 border border-purple-500/20 rounded-2xl">
+                <div className="flex items-center gap-3">
+                  <i className="fas fa-sparkles text-purple-400"></i>
+                  <div>
+                    <span className="text-[8px] text-purple-400 font-black uppercase tracking-wider">Game Theme</span>
+                    <p className="text-sm text-white font-medium">{gameTheme}</p>
+                  </div>
+                </div>
+              </div>
+            )}
             
             <div className="w-full flex flex-col lg:flex-row gap-12 items-start justify-center mt-4">
               <div className="flex-1 w-full order-2 lg:order-1">
