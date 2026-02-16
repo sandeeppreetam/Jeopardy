@@ -44,7 +44,7 @@ export default async function handler(req, res) {
     const selectedPersona = personas[Math.floor(Math.random() * personas.length)];
     const selectedWildcard = wildcards[Math.floor(Math.random() * wildcards.length)];
     
-    // --- STEP 2: CRAFT THE THEATRICAL PROMPT ---
+    // --- STEP 2: CRAFT THE THEATRICAL PROMPT WITH STRICT DIFFICULTY ORDERING ---
     const prompt = `
       [STORY SETTING]
       You are ${selectedPersona}. You are writing clues for tonight's championship round. 
@@ -57,18 +57,58 @@ export default async function handler(req, res) {
       [THE MISSION]
       For EACH category, generate exactly ${numQuestionsPerTopic} questions with values: ${pointValues.join(", ")}.
 
-      [WRITING STYLE: THE JEOPARDY STANDARD]
-      1. NO ELEMENTARY QUESTIONS: Never ask "What is the capital of X?". 
-      2. THE 'TWO-STEP' RULE: For high-value questions (${pointValues[pointValues.length - 1]}), the player should need to connect two facts.
-         - Bad: "Who was the 16th president?" 
-         - Good: "This man, a licensed bartender before he was President, is the only one to hold a patent, specifically for a device to lift boats over shoals."
-      3. DEFINITIVE ANSWERS: Despite the creative phrasing, there must be only ONE possible correct answer.
-      4. FRESHNESS: Use modern contexts, recent discoveries, or obscure but verifiable historical intersections.
+      [CRITICAL: STRICT DIFFICULTY PROGRESSION FOR NORMAL PLAYERS]
+      **EACH QUESTION MUST STRICTLY FOLLOW THIS DIFFICULTY SCALE:**
+      
+      IMPORTANT: These are questions for regular people playing a fun trivia game, NOT professional quiz competitors.
+      Even the "hardest" questions should still be ANSWERABLE by someone with decent general knowledge.
+      
+      ${pointValues.map((points, idx) => {
+        if (idx === 0) {
+          return `- ${points} points: EASIEST - Common knowledge that most people know. Examples: "Who painted the Mona Lisa?" or "What planet is known as the Red Planet?"`;
+        } else if (idx === pointValues.length - 1) {
+          return `- ${points} points: CHALLENGING - Requires good trivia knowledge or connecting multiple facts. Still answerable by someone who reads or watches documentaries. Think "pub quiz championship round" not "PhD defense."`;
+        } else if (idx === Math.floor(pointValues.length / 2)) {
+          return `- ${points} points: MEDIUM - Not common knowledge but something a reasonably informed person might know. Think "Could appear on Jeopardy's regular rounds."`;
+        } else if (idx < Math.floor(pointValues.length / 2)) {
+          return `- ${points} points: EASIER SIDE - Slightly harder than ${pointValues[idx-1]} but still fairly accessible.`;
+        } else {
+          return `- ${points} points: HARDER SIDE - More challenging than ${pointValues[idx-1]}, requires more specific knowledge.`;
+        }
+      }).join('\n      ')}
+
+      **YOU MUST ENSURE:**
+      1. A ${pointValues[0]} point question should be noticeably easier than ${pointValues[1]} points
+      2. Each subsequent point value represents a CLEAR step up in difficulty
+      3. The ${pointValues[pointValues.length-1]} point question should be challenging but NOT impossible
+      4. All questions should be ANSWERABLE - no ultra-obscure academic facts that only specialists would know
+      5. DO NOT make all questions equally hard or equally easy - there MUST be clear progression
+
+      [WRITING STYLE: THE JEOPARDY STANDARD FOR HOME PLAYERS]
+      1. NO ELEMENTARY QUESTIONS FOR LOW VALUES: Make them interesting, not "What is 2+2?"
+      2. NO IMPOSSIBLE QUESTIONS FOR HIGH VALUES: Challenge the player, don't stump everyone in the room
+      3. THE 'CLUE' APPROACH: For harder questions, give helpful context in the question itself
+         - Bad (too hard): "Who was Nixon's dog?" 
+         - Good (challenging but fair): "This president's dog was named Checkers, made famous in a 1952 speech"
+      4. DEFINITIVE ANSWERS: Despite the creative phrasing, there must be only ONE possible correct answer
+      5. FRESHNESS: Use modern contexts, recent discoveries, or interesting historical connections
+      6. VARIETY: Even within one category, explore different time periods, regions, and sub-topics
+      7. KEEP IT FUN: The goal is entertainment, not humiliation. Players should feel smart when they get answers right!
+
+      [DIFFICULTY CALIBRATION EXAMPLES FOR NORMAL PLAYERS]
+      
+      For a "US Presidents" category with 4 questions:
+      - 50 pts: "This founding father was the first US President" → George Washington (everyone knows this)
+      - 100 pts: "This president delivered the Gettysburg Address" → Abraham Lincoln (well-known)
+      - 150 pts: "The only president to serve more than two terms" → FDR (requires some history knowledge)
+      - 200 pts: "This president's dog was named Checkers, made famous in a 1952 speech" → Richard Nixon (challenging but answerable)
+      
+      Notice: Even the 200-point question is something a history buff or older person might know. It's NOT "What was Nixon's dog's vaccination record?" (impossible).
 
       [CONSTRAINTS]
       - Return strictly valid JSON.
       - Keep clues evocative but concise.
-      - Ensure point difficulty scales appropriately.
+      - Ensure point difficulty scales appropriately from easiest (${pointValues[0]}) to hardest (${pointValues[pointValues.length-1]}).
     `;
 
     // --- STEP 3: EXECUTE WITH OPTIMIZED PARAMETERS ---
