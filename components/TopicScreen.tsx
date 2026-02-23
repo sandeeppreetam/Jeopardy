@@ -70,30 +70,22 @@ const TopicScreen: React.FC<TopicScreenProps> = ({ numTopics, onComplete, onBack
 
   const allFilled = topics.every(t => t.trim());
 
+  const handleClearAll = () => {
+    setTopics(Array(numTopics).fill(''));
+  };
+
   return (
-    <div className="flex gap-5 items-start animate-fade-in">
+    <div className="flex gap-6 items-start animate-fade-in">
       {/* Recommendations sidebar */}
-      <div className="w-52 flex-shrink-0">
-        <div className="glass-panel rounded-2xl border border-white/10 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[9px] font-black text-[#C0C0C0]/50 uppercase tracking-widest">
+      <div className="w-64 flex-shrink-0">
+        <div className="glass-panel rounded-2xl border border-white/10 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[10px] font-black text-[#C0C0C0]/60 uppercase tracking-widest">
               Suggestions
             </span>
-            <button
-              onClick={handleRandomize}
-              title="Randomize suggestions"
-              className="text-[#C0C0C0]/40 hover:text-[#C0C0C0] transition-colors"
-            >
-              {/* Shuffle icon */}
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="16 3 21 3 21 8"/>
-                <line x1="4" y1="20" x2="21" y2="3"/>
-                <polyline points="21 16 21 21 16 21"/>
-                <line x1="15" y1="15" x2="21" y2="21"/>
-              </svg>
-            </button>
           </div>
-          <div className="space-y-1.5">
+
+          <div className="space-y-2 mb-4">
             {recommendations.map((rec, i) => {
               const isSelected = topics.some(t => t.trim().toLowerCase() === rec.toLowerCase());
               return (
@@ -101,10 +93,10 @@ const TopicScreen: React.FC<TopicScreenProps> = ({ numTopics, onComplete, onBack
                   key={`${rec}-${i}`}
                   onClick={() => !isSelected && handleRecommendClick(rec)}
                   disabled={isSelected}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-[10px] font-semibold transition-all
+                  className={`w-full text-left px-4 py-3 rounded-xl text-xs font-semibold transition-all
                     ${isSelected
-                      ? 'text-[#C0C0C0]/30 bg-white/3 cursor-default line-through'
-                      : 'text-[#C0C0C0]/70 hover:text-white hover:bg-white/10 cursor-pointer border border-white/5 hover:border-white/20'
+                      ? 'text-[#C0C0C0]/25 bg-white/3 cursor-default line-through'
+                      : 'text-[#C0C0C0]/80 hover:text-white hover:bg-white/10 cursor-pointer border border-white/8 hover:border-white/25 active:scale-[0.98]'
                     }`}
                 >
                   {rec}
@@ -112,9 +104,20 @@ const TopicScreen: React.FC<TopicScreenProps> = ({ numTopics, onComplete, onBack
               );
             })}
           </div>
-          <p className="text-[8px] text-gray-600 mt-3 text-center uppercase tracking-widest">
-            Click to select
-          </p>
+
+          {/* Randomize button — full width, clearly labelled */}
+          <button
+            onClick={handleRandomize}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-white/15 hover:border-white/30 hover:bg-white/8 text-[#C0C0C0]/70 hover:text-white transition-all active:scale-[0.98]"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="16 3 21 3 21 8"/>
+              <line x1="4" y1="20" x2="21" y2="3"/>
+              <polyline points="21 16 21 21 16 21"/>
+              <line x1="15" y1="15" x2="21" y2="21"/>
+            </svg>
+            <span className="text-[10px] font-black uppercase tracking-widest">Randomize</span>
+          </button>
         </div>
       </div>
 
@@ -130,7 +133,7 @@ const TopicScreen: React.FC<TopicScreenProps> = ({ numTopics, onComplete, onBack
           Type your own or pick from the suggestions →
         </p>
 
-        <div className="space-y-4 mb-12 max-h-[380px] overflow-y-auto pr-3 custom-scrollbar">
+        <div className="space-y-4 mb-6 max-h-[380px] overflow-y-auto pr-3 custom-scrollbar">
           {topics.map((topic, i) => (
             <div key={i} className="relative">
               <label className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#C0C0C0]/50 pointer-events-none">
@@ -141,7 +144,7 @@ const TopicScreen: React.FC<TopicScreenProps> = ({ numTopics, onComplete, onBack
                 value={topic}
                 onChange={(e) => handleTopicChange(i, e.target.value)}
                 placeholder="Type any category…"
-                className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C0C0C0] transition-all placeholder:text-gray-700"
+                className="w-full pl-12 pr-9 py-4 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#C0C0C0] transition-all placeholder:text-gray-700"
               />
               {topic.trim() && (
                 <button
@@ -154,6 +157,18 @@ const TopicScreen: React.FC<TopicScreenProps> = ({ numTopics, onComplete, onBack
             </div>
           ))}
         </div>
+
+        {/* Clear all */}
+        {topics.some(t => t.trim()) && (
+          <div className="flex justify-end mb-6">
+            <button
+              onClick={handleClearAll}
+              className="text-[9px] font-bold text-gray-600 hover:text-gray-400 uppercase tracking-widest transition-colors"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
 
         <div className="flex gap-4">
           <button
