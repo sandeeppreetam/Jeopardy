@@ -1,5 +1,38 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
+// --- VARIETY SYSTEM: replaces personas ---
+// These are purely structural/creative writing instructions, not character voices.
+// They guide HOW questions are framed without adding fluff to the output.
+
+const ANGLES = [
+  "Focus on origin stories — how things began, were named, or were invented.",
+  "Focus on consequences — what happened AFTER the famous event or discovery.",
+  "Focus on misconceptions — what most people get wrong about the topic.",
+  "Focus on surprising connections between seemingly unrelated things.",
+  "Focus on the 'almost' — things that nearly happened differently.",
+  "Focus on the people behind famous things — collaborators, rivals, unsung figures.",
+  "Focus on firsts and lasts — inaugural moments and final instances.",
+  "Focus on etymology and naming — why things are called what they are.",
+  "Focus on cross-cultural angles — how different societies relate to the same topic.",
+  "Focus on scale and extremes — the biggest, smallest, fastest, longest, etc.",
+];
+
+const LENSES = [
+  "Phrase clues as statements leading to a specific person, place, or thing.",
+  "Use 'This [noun]...' or 'Known for...' phrasing to give helpful context in the clue.",
+  "Lead with a striking or counterintuitive fact before narrowing to the answer.",
+  "Frame harder clues with two intersecting facts — both must point to the same answer.",
+  "Use comparison: 'Unlike X, this...' to orient the player.",
+];
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function randomSeed() {
+  return Math.floor(100000 + Math.random() * 900000);
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -12,7 +45,6 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
-
   if (!apiKey) {
     return res.status(500).json({ error: 'API key not configured' });
   }
@@ -20,109 +52,49 @@ export default async function handler(req, res) {
   try {
     const ai = new GoogleGenAI({ apiKey });
     const pointValues = Array.from({ length: numQuestionsPerTopic }, (_, i) => (i + 1) * 50);
-    
-    // --- STEP 1: ADD VARIETY GENERATORS ---
-    const personas = [
-      "a high-energy 90s game show host with a flair for the dramatic",
-      "a mysterious librarian who knows everyone's secrets",
-      "a snarky tech billionaire who thinks they're the smartest in the room",
-      "a retired cinema villain who roasts wrong answers like a dramatic monologue",
-      "a hyper competitive cricket commentator who treats every question like a World Cup final",
-      "a chill Bengaluru startup bro who rates your answers like pitch decks",
-      "a dramatic mythology narrator who reacts to every answer like it changes destiny",
-      "a sarcastic older sibling who never lets you forget your mistakes",
-      "a devotional temple announcer who treats correct answers like divine blessings",
-      "a chaotic meme page admin who replies only in viral references",
-      "a strict Indian school principal who deducts imaginary marks for confidence",
-      "a late night radio jockey who turns every question into a life lesson",
-      "a friendly chai shop uncle who gives trivia along with unsolicited advice",
-      "a fitness coach who shouts encouragement even when you get it wrong",
-      "a courtroom lawyer who cross examines your logic before accepting an answer",
-      "a sci fi spaceship AI that is slightly disappointed in humanity",
-      "a melodramatic soap opera mom who reacts emotionally to every choice",
-      "a calm monk who treats the quiz like a test of inner balance"
-    ];
 
-    const wildcards = [
-      "Focus on 'Firsts' and 'Lasts'— the beginnings and ends of eras. Don't be over focused on years.",
-      "The 'Underdog' Perspective: Highlight figures or events that history books often skip.",
-      "Frame clues as 'Who am I?' or 'What am I?' riddles.",
-      "Double-layered clues: Include a helpful hint within the clue's phrasing. Only do it for 10% of questions.",
-      "Focus on 'Mistakes that changed the world'—serendipity and accidents.",
-      "Contrast: Frame the question by comparing two things that shouldn't be related."
-    ];
-    
-    const selectedPersona = personas[Math.floor(Math.random() * personas.length)];
-    const selectedWildcard = wildcards[Math.floor(Math.random() * wildcards.length)];
-    
-    // --- STEP 2: CRAFT THE THEATRICAL PROMPT WITH STRICT DIFFICULTY ORDERING ---
+    const angle = pick(ANGLES);
+    const lens = pick(LENSES);
+    const seed = randomSeed();
+
     const prompt = `
-      [STORY SETTING]
-      You are ${selectedPersona}. You are writing clues for tonight's championship round. 
-      The audience is highly educated and hates "boring" trivia. 
-      Your secret writing prompt for tonight is: "${selectedWildcard}"
+[GENERATION SEED: ${seed}]
+Use this seed to ensure a unique, non-repetitive set of questions distinct from any prior generation.
 
-      [THE CATEGORIES]
-      ${topics.join(", ")}
+[CATEGORIES]
+${topics.join(", ")}
 
-      [THE MISSION]
-      For EACH category, generate exactly ${numQuestionsPerTopic} questions with values: ${pointValues.join(", ")}.
+[MISSION]
+For EACH category, generate exactly ${numQuestionsPerTopic} questions with point values: ${pointValues.join(", ")}.
 
-      [CRITICAL: STRICT DIFFICULTY PROGRESSION FOR NORMAL PLAYERS]
-      **EACH QUESTION MUST STRICTLY FOLLOW THIS DIFFICULTY SCALE:**
-      
-      IMPORTANT: These are questions for regular people playing a fun trivia game, NOT professional quiz competitors.
-      Even the "hardest" questions should still be ANSWERABLE by someone with decent general knowledge.
-      
-      ${pointValues.map((points, idx) => {
-        if (idx === 0) {
-          return `- ${points} points: EASIEST - Common knowledge that most people know. Examples: "Who painted the Mona Lisa?" or "What planet is known as the Red Planet?"`;
-        } else if (idx === pointValues.length - 1) {
-          return `- ${points} points: CHALLENGING - Requires good trivia knowledge or connecting multiple facts. Still answerable by someone who reads or watches documentaries. Think "pub quiz championship round" not "PhD defense."`;
-        } else if (idx === Math.floor(pointValues.length / 2)) {
-          return `- ${points} points: MEDIUM - Not common knowledge but something a reasonably informed person might know. Think "Could appear on Jeopardy's regular rounds."`;
-        } else if (idx < Math.floor(pointValues.length / 2)) {
-          return `- ${points} points: EASIER SIDE - Slightly harder than ${pointValues[idx-1]} but still fairly accessible.`;
-        } else {
-          return `- ${points} points: HARDER SIDE - More challenging than ${pointValues[idx-1]}, requires more specific knowledge.`;
-        }
-      }).join('\n      ')}
+[CREATIVE ANGLE — apply subtly across all questions]
+${angle}
 
-      **YOU MUST ENSURE:**
-      1. A ${pointValues[0]} point question should be noticeably easier than ${pointValues[1]} points
-      2. Each subsequent point value represents a CLEAR step up in difficulty
-      3. The ${pointValues[pointValues.length-1]} point question should be challenging but NOT impossible
-      4. All questions should be ANSWERABLE - no ultra-obscure academic facts that only specialists would know
-      5. DO NOT make all questions equally hard or equally easy - there MUST be clear progression
+[CLUE PHRASING STYLE — how to write each clue]
+${lens}
 
-      [WRITING STYLE: THE JEOPARDY STANDARD FOR HOME PLAYERS]
-      1. NO ELEMENTARY QUESTIONS FOR LOW VALUES: Make them interesting, not "What is 2+2?"
-      2. NO IMPOSSIBLE QUESTIONS FOR HIGH VALUES: Challenge the player, don't stump everyone in the room
-      3. THE 'CLUE' APPROACH: For harder questions, give helpful context in the question itself
-         - Bad (too hard): "Who was Nixon's dog?" 
-         - Good (challenging but fair): "This president's dog was named Checkers, made famous in a 1952 speech"
-      4. DEFINITIVE ANSWERS: Despite the creative phrasing, there must be only ONE possible correct answer
-      5. FRESHNESS: Use modern contexts, recent discoveries, or interesting historical connections
-      6. VARIETY: Even within one category, explore different time periods, regions, and sub-topics
-      7. KEEP IT FUN: The goal is entertainment, not humiliation. Players should feel smart when they get answers right!
+[DIFFICULTY SCALE — strictly follow this for normal players]
+${pointValues.map((pts, idx) => {
+  if (idx === 0)
+    return `${pts} pts: EASIEST — common knowledge. e.g. "Who painted the Mona Lisa?"`;
+  if (idx === pointValues.length - 1)
+    return `${pts} pts: CHALLENGING — requires solid trivia knowledge. Think pub quiz finals, not PhD defence. Still answerable.`;
+  if (idx === Math.floor(pointValues.length / 2))
+    return `${pts} pts: MEDIUM — not common knowledge but something an informed person might know. Jeopardy regular-round level.`;
+  if (idx < Math.floor(pointValues.length / 2))
+    return `${pts} pts: EASIER SIDE — a clear step up from ${pointValues[idx - 1]} pts.`;
+  return `${pts} pts: HARDER SIDE — a clear step up from ${pointValues[idx - 1]} pts.`;
+}).join('\n')}
 
-      [DIFFICULTY CALIBRATION EXAMPLES FOR NORMAL PLAYERS]
-      
-      For a "US Presidents" category with 4 questions:
-      - 50 pts: "This founding father was the first US President" → George Washington (everyone knows this)
-      - 100 pts: "This president delivered the Gettysburg Address" → Abraham Lincoln (well-known)
-      - 150 pts: "The only president to serve more than two terms" → FDR (requires some history knowledge)
-      - 200 pts: "This president's dog was named Checkers, made famous in a 1952 speech" → Richard Nixon (challenging but answerable)
-      
-      Notice: Even the 200-point question is something a history buff or older person might know. It's NOT "What was Nixon's dog's vaccination record?" (impossible).
-
-      [CONSTRAINTS]
-      - Return strictly valid JSON.
-      - Keep clues evocative but concise.
-      - Ensure point difficulty scales appropriately from easiest (${pointValues[0]}) to hardest (${pointValues[pointValues.length-1]}).
+Rules:
+- Clear difficulty progression is mandatory — each tier must feel meaningfully harder than the one before.
+- Every question must have exactly ONE correct answer.
+- Clues should be concise. No flavour text, no host persona, no dramatic commentary — just a clean, well-crafted clue.
+- Avoid ultra-obscure academic facts. Even the hardest question should be answerable by someone who reads broadly.
+- Cover varied sub-topics, time periods, and regions within each category.
+- Return strictly valid JSON.
     `;
 
-    // --- STEP 3: EXECUTE WITH OPTIMIZED PARAMETERS ---
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
@@ -142,9 +114,9 @@ export default async function handler(req, res) {
                     items: {
                       type: Type.OBJECT,
                       properties: {
-                        points: { type: Type.INTEGER },
+                        points:   { type: Type.INTEGER },
                         question: { type: Type.STRING },
-                        answer: { type: Type.STRING }
+                        answer:   { type: Type.STRING }
                       },
                       required: ["points", "question", "answer"]
                     }
@@ -156,20 +128,19 @@ export default async function handler(req, res) {
           },
           required: ["topics"]
         },
-        // 1.25 is high enough for "fun" but low enough to remain factually grounded
-        temperature: 1.25, 
-        topP: 0.9,
-        topK: 40
+        temperature: 1.2,
+        topP: 0.92,
+        topK: 45,
       }
     });
 
     const text = response.text;
     if (!text) throw new Error("Generation failed");
-    
+
     const data = JSON.parse(text.trim());
-    
+
     const transformedTopics = data.topics.map((topic, tIndex) => ({
-      id: `topic-${tIndex}-${Date.now()}`, // Added timestamp for uniqueness
+      id: `topic-${tIndex}-${Date.now()}`,
       title: topic.title,
       questions: topic.questions.map((q, qIndex) => ({
         ...q,
@@ -178,18 +149,16 @@ export default async function handler(req, res) {
       }))
     }));
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       topics: transformedTopics,
-      metadata: {
-        persona: selectedPersona,
-        wildcard: selectedWildcard
-      }
+      metadata: { angle, lens, seed }
     });
+
   } catch (error) {
     console.error('Gemini API Error:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Failed to generate questions',
-      details: error.message 
+      details: error.message
     });
   }
 }
