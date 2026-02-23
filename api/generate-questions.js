@@ -1,34 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-// --- VARIETY SYSTEM: replaces personas ---
-// These are purely structural/creative writing instructions, not character voices.
-// They guide HOW questions are framed without adding fluff to the output.
-
-const ANGLES = [
-  "Focus on origin stories — how things began, were named, or were invented.",
-  "Focus on consequences — what happened AFTER the famous event or discovery.",
-  "Focus on misconceptions — what most people get wrong about the topic.",
-  "Focus on surprising connections between seemingly unrelated things.",
-  "Focus on the 'almost' — things that nearly happened differently.",
-  "Focus on the people behind famous things — collaborators, rivals, unsung figures.",
-  "Focus on firsts and lasts — inaugural moments and final instances.",
-  "Focus on etymology and naming — why things are called what they are.",
-  "Focus on cross-cultural angles — how different societies relate to the same topic.",
-  "Focus on scale and extremes — the biggest, smallest, fastest, longest, etc.",
-];
-
-const LENSES = [
-  "Phrase clues as statements leading to a specific person, place, or thing.",
-  "Use 'This [noun]...' or 'Known for...' phrasing to give helpful context in the clue.",
-  "Lead with a striking or counterintuitive fact before narrowing to the answer.",
-  "Frame harder clues with two intersecting facts — both must point to the same answer.",
-  "Use comparison: 'Unlike X, this...' to orient the player.",
-];
-
-function pick(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
 function randomSeed() {
   return Math.floor(100000 + Math.random() * 900000);
 }
@@ -38,7 +9,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { topics, numQuestionsPerTopic } = req.body;
+  const { topics, numQuestionsPerTopic, usedQuestions = [] } = req.body;
 
   if (!topics || !numQuestionsPerTopic) {
     return res.status(400).json({ error: 'Missing required parameters' });
@@ -52,26 +23,41 @@ export default async function handler(req, res) {
   try {
     const ai = new GoogleGenAI({ apiKey });
     const pointValues = Array.from({ length: numQuestionsPerTopic }, (_, i) => (i + 1) * 50);
-
-    const angle = pick(ANGLES);
-    const lens = pick(LENSES);
     const seed = randomSeed();
+
+    // Build per-category exclusion blocks
+    const exclusionBlock = (() => {
+      if (!usedQuestions.length) return '';
+
+      const byCategory = {};
+      usedQuestions.forEach(({ category, answer, question }) => {
+        const matchedTopic = topics.find(t =>
+          t.toLowerCase().includes(category) || category.includes(t.toLowerCase())
+        );
+        if (!matchedTopic) return;
+        if (!byCategory[matchedTopic]) byCategory[matchedTopic] = [];
+        byCategory[matchedTopic].push({ answer, question });
+      });
+
+      const lines = Object.entries(byCategory).map(([topic, items]) => {
+        const answerList = items.map(i => `"${i.answer}"`).join(', ');
+        const questionSnippets = items.map(i => `"${i.question.slice(0, 60)}"`).join('\n    ');
+        return `${topic}:\n  Do NOT use these answers: ${answerList}\n  Do NOT reuse clues similar to:\n    ${questionSnippets}`;
+      });
+
+      return lines.length
+        ? `\n[EXCLUSIONS — already seen by this player, do not repeat]\n${lines.join('\n\n')}\n`
+        : '';
+    })();
 
     const prompt = `
 [GENERATION SEED: ${seed}]
-Use this seed to ensure a unique, non-repetitive set of questions distinct from any prior generation.
-
+${exclusionBlock}
 [CATEGORIES]
 ${topics.join(", ")}
 
 [MISSION]
 For EACH category, generate exactly ${numQuestionsPerTopic} questions with point values: ${pointValues.join(", ")}.
-
-[CREATIVE ANGLE — apply subtly across all questions]
-${angle}
-
-[CLUE PHRASING STYLE — how to write each clue]
-${lens}
 
 [DIFFICULTY SCALE — strictly follow this for normal players]
 ${pointValues.map((pts, idx) => {
@@ -89,7 +75,7 @@ ${pointValues.map((pts, idx) => {
 Rules:
 - Clear difficulty progression is mandatory — each tier must feel meaningfully harder than the one before.
 - Every question must have exactly ONE correct answer.
-- Clues should be concise. No flavour text, no host persona, no dramatic commentary — just a clean, well-crafted clue.
+- Clues should be concise. No flavour text, no dramatic commentary — just a clean, well-crafted clue.
 - Avoid ultra-obscure academic facts. Even the hardest question should be answerable by someone who reads broadly.
 - Cover varied sub-topics, time periods, and regions within each category.
 - Return strictly valid JSON.
@@ -151,7 +137,7 @@ Rules:
 
     return res.status(200).json({
       topics: transformedTopics,
-      metadata: { angle, lens, seed }
+      metadata: { seed, excludedCount: usedQuestions.length }
     });
 
   } catch (error) {

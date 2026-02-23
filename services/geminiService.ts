@@ -1,8 +1,15 @@
 import { Topic } from "../types";
 
+interface UsedQuestion {
+  category: string;
+  answer: string;
+  question: string;
+}
+
 export const generateQuestions = async (
-  topics: string[], 
-  numQuestionsPerTopic: number
+  topics: string[],
+  numQuestionsPerTopic: number,
+  usedQuestions: UsedQuestion[] = []
 ): Promise<{ topics: Topic[], theme: string }> => {
   try {
     const response = await fetch('/api/generate-questions', {
@@ -12,7 +19,8 @@ export const generateQuestions = async (
       },
       body: JSON.stringify({
         topics,
-        numQuestionsPerTopic
+        numQuestionsPerTopic,
+        usedQuestions
       })
     });
 

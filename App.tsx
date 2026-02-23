@@ -9,6 +9,39 @@ import QuestionModal from './components/QuestionModal';
 import GameOverScreen from './components/GameOverScreen';
 import HistoryPanel from './components/HistoryPanel';
 
+const STORAGE_KEY = 'jeopardy_used_questions';
+const MAX_STORED = 300; // cap so localStorage doesn't bloat
+
+interface UsedQuestion {
+  category: string;   // normalised to lowercase
+  answer: string;
+  question: string;
+}
+
+function loadUsedQuestions(): UsedQuestion[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveUsedQuestions(incoming: UsedQuestion[]) {
+  try {
+    const existing = loadUsedQuestions();
+    // Deduplicate by answer+category, newest wins, keep under cap
+    const map = new Map<string, UsedQuestion>();
+    [...existing, ...incoming].forEach(q => {
+      map.set(`${q.category}::${q.answer.toLowerCase()}`, q);
+    });
+    const trimmed = Array.from(map.values()).slice(-MAX_STORED);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+  } catch {
+    // localStorage unavailable — silently skip
+  }
+}
+
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.SETUP);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -34,9 +67,27 @@ const App: React.FC = () => {
 
   const handleTopicsComplete = async (topicNames: string[]) => {
     setGameState(GameState.LOADING);
-    setLoadingMessage("Synthesizing Categories...");
+    setLoadingMessage("Generating Question Board...");
     try {
-      const { topics: generated, theme } = await generateQuestions(topicNames, gameSettings.numQuestionsPerTopic);
+      // Read exclusion list from localStorage before generating
+      const usedQuestions = loadUsedQuestions();
+
+      const { topics: generated, theme } = await generateQuestions(
+        topicNames,
+        gameSettings.numQuestionsPerTopic,
+        usedQuestions
+      );
+
+      // Persist the newly generated questions so they're excluded next time
+      const toStore: UsedQuestion[] = generated.flatMap(topic =>
+        topic.questions.map(q => ({
+          category: topic.title.toLowerCase(),
+          answer: q.answer,
+          question: q.question,
+        }))
+      );
+      saveUsedQuestions(toStore);
+
       setTopics(generated);
       setGameTheme(theme);
       setGameState(GameState.PLAYING);
@@ -148,7 +199,6 @@ const App: React.FC = () => {
           <div className="w-full flex flex-col items-center">
             <ScoreBoard players={players} currentPlayerIndex={currentPlayerIndex} />
             
-            {/* Game Theme Display */}
             {gameTheme && (
               <div className="mb-6 px-6 py-3 bg-purple-500/10 border border-purple-500/20 rounded-2xl">
                 <div className="flex items-center gap-3">
